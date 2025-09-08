@@ -1,20 +1,20 @@
-/* GSH Professor Virtual - bootstrap.js
-   Carregue este arquivo via jsDelivr no “Body end” do Website Builder.
-   O app aparece onde existir <div id="gsh-gpt-widget"></div> na página.
+/* GSH Virtual English Teacher - bootstrap.js (EN UI + auto-mount before footer)
+   Load this via jsDelivr in Hostinger “Custom code”.
+   This file now CREATES the #gsh-gpt-widget container by itself before <footer>.
 */
 (function(){
-  // evita rodar duas vezes se o Builder injetar em mais páginas
+  // prevent double load
   if (window.__GSH_BOOTSTRAP_LOADED__) return;
   window.__GSH_BOOTSTRAP_LOADED__ = true;
 
   const CONFIG = {
-    BACKEND_BASE_URL: "https://misty-tree-121b.rgermano-wup.workers.dev", // sua URL do Worker
+    BACKEND_BASE_URL: "https://misty-tree-121b.rgermano-wup.workers.dev",
     CHAT_MODEL: "gpt-5-mini",
     TTS_VOICE: "alloy",
     TTS_FORMAT: "mp3",
     STT_MODEL: "whisper-1",
     MAX_IX: 15,
-    MAX_MS: 10 * 60 * 1000 // 10 minutos
+    MAX_MS: 10 * 60 * 1000 // 10 minutes
   };
 
   function onReady(fn){
@@ -22,11 +22,34 @@
     else fn();
   }
 
+  // Create or find the mount, inserting it BEFORE the footer when possible
+  function ensureMountBeforeFooter(){
+    let mount = document.getElementById('gsh-gpt-widget');
+    if (mount) return mount;
+    if (!document.body) return null;
+
+    mount = document.createElement('div');
+    mount.id = 'gsh-gpt-widget';
+
+    // 1) Insert before <footer> (or common footer selectors)
+    const footer = document.querySelector('footer, #footer, .footer');
+    if (footer && footer.parentNode) {
+      footer.parentNode.insertBefore(mount, footer);
+      return mount;
+    }
+    // 2) Fallback: append inside <main> (or common main selectors)
+    const main = document.querySelector('main, #main, .main-content, .site-content');
+    if (main) { main.appendChild(mount); return mount; }
+    // 3) Last resort: end of body
+    document.body.appendChild(mount);
+    return mount;
+  }
+
   onReady(init);
 
   function init(){
-    const mount = document.getElementById('gsh-gpt-widget');
-    if(!mount) return;                // página sem contêiner: não faz nada
+    const mount = ensureMountBeforeFooter();
+    if(!mount) return;                // should not happen after DOMContentLoaded
     if(mount.dataset.initialized) return;
     mount.dataset.initialized = '1';
 
@@ -35,7 +58,7 @@
     wireUp(mount);
   }
 
-  // ===== CSS inline (injetado no <head>) =====
+  // ===== CSS =====
   function injectStyles(){
     if(document.getElementById('gsh-widget-style')) return;
     const css = `
@@ -68,7 +91,7 @@
     document.head.appendChild(style);
   }
 
-  // ===== HTML da UI =====
+  // ===== HTML =====
   function widgetHTML(){
     return `
 <div class="gsh-wrap">
@@ -76,8 +99,8 @@
     <div class="gsh-header">
       <div class="gsh-left">
         <div class="gsh-dot"></div>
-        <div class="gsh-title">GSH – Professor Virtual (Inglês)</div>
-        <span class="gsh-pill" id="gsh-status">pronto</span>
+        <div class="gsh-title">GSH – Virtual English Teacher</div>
+        <span class="gsh-pill" id="gsh-status">ready</span>
       </div>
       <div class="gsh-usage" id="gsh-usageBox" style="display:none;">
         <div>Left today:</div>
@@ -92,35 +115,35 @@
     </div>
 
     <div id="gsh-auth" style="padding:16px;display:none;gap:12px;flex-direction:column;">
-      <div class="gsh-tiny">Faça login com seu e-mail da escola para usar o professor virtual.</div>
+      <div class="gsh-tiny">Log in with your school email to use the virtual teacher.</div>
       <div class="gsh-row" style="flex-wrap:wrap;gap:12px;align-items:flex-end;">
         <div style="display:flex;flex-direction:column;gap:6px;min-width:260px;">
           <label for="gsh-email">Email</label>
-          <input id="gsh-email" type="text" placeholder="aluno@globalspeak.email ou admin@globalspeak.online" class="gsh-input"/>
+          <input id="gsh-email" type="text" placeholder="student@globalspeak.email or admin@globalspeak.online" class="gsh-input"/>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;min-width:200px;">
-          <label for="gsh-pass">Senha</label>
-          <input id="gsh-pass" type="password" placeholder="sua senha" class="gsh-input"/>
+          <label for="gsh-pass">Password</label>
+          <input id="gsh-pass" type="password" placeholder="your password" class="gsh-input"/>
         </div>
-        <button id="gsh-login" class="gsh-btn">Entrar</button>
+        <button id="gsh-login" class="gsh-btn">Log in</button>
       </div>
-      <div class="gsh-tiny">Admins: <code>@globalspeak.online</code>. Alunos: <code>@globalspeak.email</code>.</div>
+      <div class="gsh-tiny">Admins: <code>@globalspeak.online</code>. Students: <code>@globalspeak.email</code>.</div>
     </div>
 
     <div id="gsh-admin" style="display:none;padding:16px;border-bottom:1px solid rgba(255,255,255,.07);">
       <div class="gsh-row" style="justify-content:space-between;align-items:center;">
-        <div class="gsh-title" style="font-size:14px;">Painel do Admin</div>
+        <div class="gsh-title" style="font-size:14px;">Admin Panel</div>
         <button id="gsh-logoutA" class="gsh-btn">Logout</button>
       </div>
-      <div class="gsh-tiny">Adicionar/Remover alunos (domínio <code>@globalspeak.email</code>).</div>
+      <div class="gsh-tiny">Add/Remove authorized students (domain <code>@globalspeak.email</code>).</div>
       <div class="gsh-row" style="flex-wrap:wrap;gap:8px;margin-top:8px;">
-        <input id="gsh-newEmail" type="text" placeholder="novoaluno@globalspeak.email" class="gsh-input"/>
-        <input id="gsh-newPass" type="text" placeholder="senha do aluno" class="gsh-input"/>
-        <button id="gsh-add" class="gsh-btn">+ Adicionar aluno</button>
+        <input id="gsh-newEmail" type="text" placeholder="newstudent@globalspeak.email" class="gsh-input"/>
+        <input id="gsh-newPass" type="text" placeholder="student password" class="gsh-input"/>
+        <button id="gsh-add" class="gsh-btn">+ Add student</button>
       </div>
       <div class="gsh-row" style="flex-wrap:wrap;gap:8px;margin-top:8px;">
-        <input id="gsh-delEmail" type="text" placeholder="aluno@globalspeak.email" class="gsh-input"/>
-        <button id="gsh-del" class="gsh-btn">– Remover aluno</button>
+        <input id="gsh-delEmail" type="text" placeholder="student@globalspeak.email" class="gsh-input"/>
+        <button id="gsh-del" class="gsh-btn">– Remove student</button>
       </div>
       <div id="gsh-adminMsg" class="gsh-tiny" style="margin-top:8px;"></div>
     </div>
@@ -149,11 +172,11 @@
 <audio id="gsh-tts" preload="auto"></audio>`;
   }
 
-  // ===== Lógica / eventos =====
+  // ===== Logic =====
   function wireUp(root){
     const $ = sel => root.querySelector(sel);
 
-    // refs UI
+    // refs
     const $status = $('#gsh-status');
     const $usageBox = $('#gsh-usageBox');
     const $barIx = $('#gsh-barIx');
@@ -188,7 +211,7 @@
     const $stop = $('#gsh-stop');
     const $tts = $('#gsh-tts');
 
-    let session = null; // { token, role, email }
+    let session = null;
 
     // helpers
     function setStatus(s){ $status.textContent = s; }
@@ -209,7 +232,7 @@
     }
     function authHeader(){ return session? { 'Authorization': `Bearer ${session.token}` } : {}; }
 
-    // ===== Uso/limites =====
+    // usage
     async function fetchUsage(){
       try{
         const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/usage`, { headers: { ...authHeader() } });
@@ -237,22 +260,22 @@
       }catch(e){ console.warn('usage', e); }
     }
 
-    // ===== Auth =====
+    // auth
     async function login(){
       const email = $email.value.trim();
       const password = $pass.value;
-      if(!email || !password) return alert('Preencha email e senha.');
-      setStatus('autenticando...');
+      if(!email || !password) return alert('Fill in email and password.');
+      setStatus('authenticating...');
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ email, password })
       });
       const data = await r.json();
-      if(!r.ok){ setStatus('erro'); return alert(data.error || 'Falha no login'); }
+      if(!r.ok){ setStatus('error'); return alert(data.error || 'Login failed'); }
       session = { token: data.token, role: data.role, email: data.email };
       localStorage.setItem('gsh_session', JSON.stringify(session));
-      setStatus('pronto');
+      setStatus('ready');
       show(session.role === 'admin' ? 'admin' : 'chat');
     }
 
@@ -269,42 +292,42 @@
     $logoutA.addEventListener('click', logout);
     $logoutU.addEventListener('click', logout);
 
-    // restaurar sessão, se existir
+    // restore
     try{
       const s = JSON.parse(localStorage.getItem('gsh_session'));
       if(s){ session = s; show(s.role === 'admin' ? 'admin' : 'chat'); }
       else { show('auth'); }
     }catch{ show('auth'); }
 
-    // ===== Ações do Admin =====
+    // admin actions
     $add.addEventListener('click', async ()=>{
       const email = $newEmail.value.trim();
       const password = $newPass.value;
-      if(!email || !password) return alert('Informe email e senha do aluno.');
+      if(!email || !password) return alert("Enter the student's email and password.");
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/admin/addUser`, {
         method:'POST',
         headers:{ ...authHeader(), 'Content-Type':'application/json' },
         body: JSON.stringify({ email, password })
       });
       const data = await r.json();
-      $adminMsg.textContent = data.ok ? `Aluno ${email} adicionado.` : (data.error || 'Erro');
+      $adminMsg.textContent = data.ok ? `Student ${email} added.` : (data.error || 'Error');
     });
 
     $del.addEventListener('click', async ()=>{
       const email = $delEmail.value.trim();
-      if(!email) return alert('Informe o email do aluno.');
+      if(!email) return alert("Enter the student's email.");
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/admin/deleteUser`, {
         method:'POST',
         headers:{ ...authHeader(), 'Content-Type':'application/json' },
         body: JSON.stringify({ email })
       });
       const data = await r.json();
-      $adminMsg.textContent = data.ok ? `Aluno ${email} removido.` : (data.error || 'Erro');
+      $adminMsg.textContent = data.ok ? `Student ${email} removed.` : (data.error || 'Error');
     });
 
-    // ===== Chat / STT / TTS =====
+    // chat / stt / tts
     async function transcribe(blob){
-      setStatus('transcrevendo...');
+      setStatus('transcribing...');
       const form = new FormData();
       form.append('file', blob, 'audio.webm');
       form.append('model', CONFIG.STT_MODEL);
@@ -315,16 +338,16 @@
       });
       if(!r.ok){
         const e = await r.json().catch(()=>({}));
-        throw new Error(e.error || 'Falha na transcrição');
+        throw new Error(e.error || 'Transcription failed');
       }
       const data = await r.json();
-      setStatus('pronto');
+      setStatus('ready');
       await fetchUsage();
       return data.text;
     }
 
     async function chat(prompt){
-      setStatus('pensando...');
+      setStatus('thinking...');
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/chat`, {
         method:'POST',
         headers:{ ...authHeader(), 'Content-Type':'application/json' },
@@ -337,14 +360,14 @@
         })
       });
       const data = await r.json();
-      if(!r.ok) throw new Error(data.error || 'Falha no chat');
-      setStatus('pronto');
+      if(!r.ok) throw new Error(data.error || 'Chat failed');
+      setStatus('ready');
       await fetchUsage();
       return data.reply;
     }
 
     async function tts(text){
-      setStatus('gerando áudio...');
+      setStatus('generating audio...');
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/tts`, {
         method:'POST',
         headers:{ ...authHeader(), 'Content-Type':'application/json' },
@@ -352,10 +375,10 @@
       });
       if(!r.ok){
         const e = await r.text();
-        throw new Error(e || 'Falha no TTS');
+        throw new Error(e || 'TTS failed');
       }
       const arrayBuf = await r.arrayBuffer();
-      setStatus('pronto');
+      setStatus('ready');
       await fetchUsage();
       return new Blob([arrayBuf], { type: `audio/${CONFIG.TTS_FORMAT}` });
     }
@@ -376,7 +399,7 @@
           }catch(e){ console.error(e); }
         }
       }catch(err){
-        setStatus('erro');
+        setStatus('error');
         addMessage('⚠️ ' + err.message, 'bot');
       }
     }
@@ -386,7 +409,7 @@
     $stop.addEventListener('click', ()=>{ try{ $tts.pause(); $tts.currentTime=0; }catch{} });
     $clear.addEventListener('click', ()=>{ $messages.innerHTML=''; });
 
-    // Gravação de áudio (MediaRecorder)
+    // audio recording
     let recording = false, mediaRecorder, chunks = [];
     $mic.addEventListener('click', async ()=>{
       if(!recording){
@@ -408,17 +431,16 @@
           mediaRecorder.start();
           recording = true;
           $mic.textContent = '⏹️ Stop';
-          setStatus('gravando...');
+          setStatus('recording...');
         }catch(err){
-          alert('Permita o microfone para gravar.');
+          alert('Please allow microphone access.');
         }
       } else {
         mediaRecorder.stop();
         recording = false;
         $mic.textContent = '🎙️ Record';
-        setStatus('processando...');
+        setStatus('processing...');
       }
     });
   }
 })();
-

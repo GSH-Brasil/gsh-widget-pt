@@ -9,7 +9,7 @@
 
   const CONFIG = {
     BACKEND_BASE_URL: "https://misty-tree-121b.rgermano-wup.workers.dev",
-    CHAT_MODEL: "gpt-5-mini",
+    CHAT_MODEL: "gpt-4o-mini",
     TTS_VOICE: "alloy",
     TTS_FORMAT: "mp3",
     STT_MODEL: "whisper-1",

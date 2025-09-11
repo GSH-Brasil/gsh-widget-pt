@@ -10,7 +10,7 @@
   const CONFIG = {
     // 🔧 Troque para a URL do NOVO Worker PT quando ele estiver publicado:
     // Ex.: "https://conexao-brasil-app.seu-subdominio.workers.dev"
-    BACKEND_BASE_URL: "https://misty-tree-121b.rgermano-wup.workers.dev",
+    BACKEND_BASE_URL: "https://conexao-brasil-app.rgermano-wup.workers.dev",
     CHAT_MODEL: "gpt-4o-mini",
     TTS_VOICE: "alloy",
     TTS_FORMAT: "mp3",

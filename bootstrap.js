@@ -89,7 +89,7 @@
     <div class="gsh-header">
       <div class="gsh-left">
         <div class="gsh-dot"></div>
-        <div class="gsh-title">GSH – Virtual English Teacher</div>
+        <div class="gsh-title">GSH – Globy</div>
         <span class="gsh-pill" id="gsh-status">ready</span>
       </div>
       <div class="gsh-usage" id="gsh-usageBox" style="display:none;">
@@ -109,11 +109,11 @@
       <div class="gsh-row" style="flex-wrap:wrap;gap:12px;align-items:flex-end;">
         <div style="display:flex;flex-direction:column;gap:6px;min-width:260px;">
           <label for="gsh-email">Email</label>
-          <input id="gsh-email" type="text" placeholder="student@globalspeak.email or admin@globalspeak.online" class="gsh-input"/>
+          <input id="gsh-email" type="texto" placeholder="estudante@globalspeak.email ou admin@globalspeak.online" class="gsh-input"/>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;min-width:200px;">
-          <label for="gsh-pass">Password</label>
-          <input id="gsh-pass" type="password" placeholder="your password" class="gsh-input"/>
+          <label for="gsh-pass">Senha</label>
+          <input id="gsh-pass" type="senha" placeholder="sua senha" class="gsh-input"/>
         </div>
         <button id="gsh-login" class="gsh-btn">Log in</button>
       </div>
@@ -125,35 +125,35 @@
         <div class="gsh-title" style="font-size:14px;">Admin Panel</div>
         <button id="gsh-logoutA" class="gsh-btn">Logout</button>
       </div>
-      <div class="gsh-tiny">Add/Remove authorized students (domain <code>@globalspeak.email</code>).</div>
+      <div class="gsh-tiny">Adicione/Remova estudantes (domain <code>@globalspeak.email</code>).</div>
       <div class="gsh-row" style="flex-wrap:wrap;gap:8px;margin-top:8px;">
-        <input id="gsh-newEmail" type="text" placeholder="newstudent@globalspeak.email" class="gsh-input"/>
-        <input id="gsh-newPass" type="text" placeholder="student password" class="gsh-input"/>
+        <input id="gsh-newEmail" type="text" placeholder="novo estudante@globalspeak.email" class="gsh-input"/>
+        <input id="gsh-newPass" type="text" placeholder="senha" class="gsh-input"/>
         <button id="gsh-add" class="gsh-btn">+ Add student</button>
       </div>
       <div class="gsh-row" style="flex-wrap:wrap;gap:8px;margin-top:8px;">
-        <input id="gsh-delEmail" type="text" placeholder="student@globalspeak.email" class="gsh-input"/>
-        <button id="gsh-del" class="gsh-btn">– Remove student</button>
+        <input id="gsh-delEmail" type="text" placeholder="estudante@globalspeak.email" class="gsh-input"/>
+        <button id="gsh-del" class="gsh-btn">– Remover estudante</button>
       </div>
       <div id="gsh-adminMsg" class="gsh-tiny" style="margin-top:8px;"></div>
     </div>
 
     <div id="gsh-chat" style="display:none;">
       <div id="gsh-messages" class="gsh-messages"></div>
-      <div class="gsh-tiny">Tip: You can type or record in Spanish/Portuguese; the teacher will ALWAYS reply in ENGLISH with grammar fixes and a pronunciation tip.</div>
+      <div class="gsh-tiny">Dica: voce pode digitar ou gravar audio em Espanhol/Português; a professora SEMPRE responderá em Português com correções gramaticais e dicas de pronúncia.</div>
       <div class="gsh-controls">
-        <input id="gsh-text" type="text" placeholder="Type your question..." class="gsh-input"/>
+        <input id="gsh-text" type="texto" placeholder="Digite sua pergunta..." class="gsh-input"/>
         <div class="gsh-row">
-          <button id="gsh-mic" class="gsh-btn">🎙️ Record</button>
-          <button id="gsh-send" class="gsh-btn">Send</button>
+          <button id="gsh-mic" class="gsh-btn">🎙️ Gravar</button>
+          <button id="gsh-send" class="gsh-btn">Enviar</button>
         </div>
       </div>
       <div class="gsh-controls" style="justify-content:space-between;">
         <label class="gsh-audio"><input type="checkbox" id="gsh-playAudio" checked> Play audio reply</label>
         <div class="gsh-row">
-          <button id="gsh-stop" class="gsh-btn">⏹️ Stop audio</button>
-          <button id="gsh-clear" class="gsh-btn">🧹 Clear</button>
-          <button id="gsh-logoutU" class="gsh-btn">Logout</button>
+          <button id="gsh-stop" class="gsh-btn">⏹️ Parar audio</button>
+          <button id="gsh-clear" class="gsh-btn">🧹 Limpar</button>
+          <button id="gsh-logoutU" class="gsh-btn">Sair</button>
         </div>
       </div>
     </div>
@@ -217,7 +217,7 @@
 
     async function login(){
       const email = $email.value.trim(); const password = $pass.value;
-      if(!email || !password) return alert('Fill in email and password.');
+      if(!email || !password) return alert('Digite email e senha.');
       setStatus('authenticating...');
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) });
       const data = await r.json();
@@ -242,39 +242,39 @@
 
     $add.addEventListener('click', async ()=>{
       const email = $newEmail.value.trim(), password = $newPass.value;
-      if(!email || !password) return alert("Enter the student's email and password.");
+      if(!email || !password) return alert("Digite o email do estudante e a senha.");
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/admin/addUser`, { method:'POST', headers:{ ...authHeader(), 'Content-Type':'application/json' }, body: JSON.stringify({ email, password }) });
       const data = await r.json();
       $adminMsg.textContent = data.ok ? `Student ${email} added.` : (data.error || 'Error');
     });
     $del.addEventListener('click', async ()=>{
       const email = $delEmail.value.trim();
-      if(!email) return alert("Enter the student's email.");
+      if(!email) return alert("Digite o email do estudante.");
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/admin/deleteUser`, { method:'POST', headers:{ ...authHeader(), 'Content-Type':'application/json' }, body: JSON.stringify({ email }) });
       const data = await r.json();
       $adminMsg.textContent = data.ok ? `Student ${email} removed.` : (data.error || 'Error');
     });
 
     async function transcribe(blob){
-      setStatus('transcribing...');
+      setStatus('Transcrevendo...');
       const form = new FormData(); form.append('file', blob, 'audio.webm'); form.append('model', CONFIG.STT_MODEL);
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/stt`, { method:'POST', headers:{ ...authHeader() }, body: form });
-      if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.error || 'Transcription failed'); }
+      if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.error || 'Falha na transcrição'); }
       const data = await r.json(); setStatus('ready'); await fetchUsage(); return data.text;
     }
     async function chat(prompt){
-      setStatus('thinking...');
+      setStatus('Pensando...');
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/chat`, { method:'POST', headers:{ ...authHeader(), 'Content-Type':'application/json' }, body: JSON.stringify({
         model: CONFIG.CHAT_MODEL,
         messages: [
-          { role:'system', content: `You are Global Speak Hub's virtual English teacher. Always reply 100% in ENGLISH only (text and audio), even if the student's input is in Spanish or Portuguese. Your job on every turn: (1) answer the question clearly and naturally in English; (2) correct the student's grammar and spelling with 1–2 short examples in English; (3) give a quick pronunciation tip in English; (4) if the student uses Spanish/Portuguese, briefly restate what they asked in English before answering.` },
+          { role:'system', content: `Você é um professor de português do Brasil para falantes de espanhol. Responda SEMPRE e SOMENTE em português do Brasil, de forma clara e prática (texto e audio). Se o aluno escrever em espanhol, responda em português. Sua tarefa é sempre: (1) responder a pergunta de forma clara e natural em português; (2) corrigir a gramática do estudante e sua ortografia com 1-2 exemplos curtos em Português; (3) dê uma dica rápida de pronúncia em Português; (4) se o aluno usar espanhol/português, repita brevemente o que foi perguntado em português antes de responder.` },
           { role:'user', content: prompt }
         ] }) });
       const data = await r.json(); if(!r.ok) throw new Error(data.error || 'Chat failed');
       setStatus('ready'); await fetchUsage(); return data.reply;
     }
     async function tts(text){
-      setStatus('generating audio...');
+      setStatus('gerando audio...');
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/tts`, { method:'POST', headers:{ ...authHeader(), 'Content-Type':'application/json' }, body: JSON.stringify({ voice: CONFIG.TTS_VOICE, format: CONFIG.TTS_FORMAT, input: text }) });
       if(!r.ok){ const e=await r.text(); throw new Error(e || 'TTS failed'); }
       const buf = await r.arrayBuffer(); setStatus('ready'); await fetchUsage();
@@ -310,10 +310,10 @@
             try{ const text = await transcribe(blob); addMessage(`(voice) ${text}`, 'user'); await handleSend(text); }
             catch(err){ addMessage('⚠️ ' + err.message, 'bot'); }
           };
-          mediaRecorder.start(); recording=true; $mic.textContent='⏹️ Stop'; setStatus('recording...');
-        }catch{ alert('Please allow microphone access.'); }
+          mediaRecorder.start(); recording=true; $mic.textContent='⏹️ Stop'; setStatus('gravando...');
+        }catch{ alert('Por favor, permita acesso ao microfone.'); }
       } else {
-        mediaRecorder.stop(); recording=false; $mic.textContent='🎙️ Record'; setStatus('processing...');
+        mediaRecorder.stop(); recording=false; $mic.textContent='🎙️ Record'; setStatus('processando...');
       }
     });
 

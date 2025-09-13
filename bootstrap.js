@@ -140,7 +140,7 @@
 
     <div id="gsh-chat" style="display:none;">
       <div id="gsh-messages" class="gsh-messages"></div>
-      <div class="gsh-tiny">Dica: você pode digitar ou gravar áudio em espanhol/português; a professora <strong>sempre</strong> responderá em português, com correções gramaticais e dicas de pronúncia.</div>
+      <div class="gsh-tiny">Dica: você pode digitar ou gravar áudio em espanhol/português; a <strong>Globy</strong> sempre responderá em português, com correções gramaticais e dicas de pronúncia.</div>
       <div class="gsh-controls">
         <input id="gsh-text" type="text" placeholder="Digite sua pergunta..." class="gsh-input"/>
         <div class="gsh-row">

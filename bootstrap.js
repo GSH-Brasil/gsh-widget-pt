@@ -75,7 +75,39 @@
 .gsh-btn{background:#1a2453;color:var(--ink);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:10px 14px;cursor:pointer}
 .gsh-btn:hover{background:#21306c}
 .gsh-tiny{font-size:12px;color:var(--muted);padding:0 12px 10px}
-.gsh-audio{display:flex;gap:6px;align-items:center}`;
+.gsh-audio{display:flex;gap:6px;align-items:center}
+
+/* ======= GSH: ajustes de layout e visibilidade (UI-only) ======= */
+/* Some com o contador de "minutos" (texto + barra), mantendo lógica intacta */
+#gsh-minText { display: none !important; }
+#gsh-usageBox [title="minutos restantes"] { display: none !important; }
+
+/* No mobile: barra de INTERAÇÕES na 1ª linha; abaixo: "X interações" + "reinicia em …" */
+@media (max-width: 600px) {
+  #gsh-usageBox .gsh-row {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  /* container da barra de interações ocupa a linha inteira */
+  #gsh-usageBox [title="interações restantes"] {
+    order: 1;
+    flex: 1 0 100%;
+  }
+  #gsh-ixText {
+    order: 2;
+    display: inline-block;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: normal;   /* evita cortar no celular */
+    word-break: break-word;
+  }
+  #gsh-resetText {
+    order: 3;
+  }
+}
+/* =============================================================== */
+`;
     const style = document.createElement("style");
     style.id = "gsh-widget-style";
     style.textContent = css;
@@ -109,9 +141,9 @@
       <div class="gsh-row" style="flex-wrap:wrap;gap:12px;align-items:flex-end;">
         <div style="display:flex;flex-direction:column;gap:6px;min-width:260px;">
           <label for="gsh-email">E-mail</label>
-          <input id="gsh-email" type="text" placeholder="estudante@globalspeak.email ou admin@globalspeak.online" class="gsh-input"/>
+          <input id="gsh-email" type="email" autocapitalize="none" autocomplete="username" autocorrect="off" spellcheck="false" inputmode="email" placeholder="estudante@globalspeak.email ou admin@globalspeak.online" class="gsh-input"/>
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;min-width:200px;">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:200px%;">
           <label for="gsh-pass">Senha</label>
           <input id="gsh-pass" type="password" placeholder="sua senha" class="gsh-input"/>
         </div>
@@ -127,12 +159,12 @@
       </div>
       <div class="gsh-tiny">Adicionar/Remover estudantes (domínio <code>@globalspeak.email</code>).</div>
       <div class="gsh-row" style="flex-wrap:wrap;gap:8px;margin-top:8px;">
-        <input id="gsh-newEmail" type="text" placeholder="novo estudante@globalspeak.email" class="gsh-input"/>
+        <input id="gsh-newEmail" type="email" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" placeholder="novo estudante@globalspeak.email" class="gsh-input"/>
         <input id="gsh-newPass" type="text" placeholder="senha" class="gsh-input"/>
         <button id="gsh-add" class="gsh-btn">+ Adicionar estudante</button>
       </div>
       <div class="gsh-row" style="flex-wrap:wrap;gap:8px;margin-top:8px;">
-        <input id="gsh-delEmail" type="text" placeholder="estudante@globalspeak.email" class="gsh-input"/>
+        <input id="gsh-delEmail" type="email" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" placeholder="estudante@globalspeak.email" class="gsh-input"/>
         <button id="gsh-del" class="gsh-btn">– Remover estudante</button>
       </div>
       <div id="gsh-adminMsg" class="gsh-tiny" style="margin-top:8px;"></div>
@@ -219,6 +251,30 @@
 
     let session = null;
 
+    /* === Atributos anti-capitularização e teclado correto para e-mails === */
+    try {
+      [$email, $newEmail, $delEmail].forEach((el)=>{
+        if(!el) return;
+        el.setAttribute('type','email');
+        el.setAttribute('autocapitalize','none');
+        el.setAttribute('autocomplete','username');
+        el.setAttribute('autocorrect','off');
+        el.setAttribute('spellcheck','false');
+        el.setAttribute('inputmode','email');
+      });
+    } catch(_) {}
+
+    /* === Esconder o bloco de "minutos" (UI apenas; lógica permanece) === */
+    try {
+      if ($minText) $minText.style.display = 'none';
+      if ($barMin) {
+        const barContainer = $barMin.closest('.gsh-bar');
+        if (barContainer && barContainer.parentElement) {
+          barContainer.parentElement.style.display = 'none';
+        }
+      }
+    } catch(e){}
+
     function setStatus(s){ $status.textContent = s; }
     function addMessage(t, who){
       const d=document.createElement('div');
@@ -261,7 +317,8 @@
     }
 
     async function login(){
-      const email = $email.value.trim(); const password = $pass.value;
+      // força e-mail minúsculo para evitar "A" maiúsculo no iPhone
+      const email = $email.value.trim().toLowerCase(); const password = $pass.value;
       if(!email || !password) return alert('Digite e-mail e senha.');
       setStatus('Autenticando...');
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/auth/login`, {
@@ -299,7 +356,7 @@
     }catch{ show('auth'); }
 
     $add.addEventListener('click', async ()=>{
-      const email = $newEmail.value.trim(), password = $newPass.value;
+      const email = $newEmail.value.trim().toLowerCase(), password = $newPass.value;
       if(!email || !password) return alert("Digite o e-mail do estudante e a senha.");
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/admin/addUser`, {
         method:'POST',
@@ -311,7 +368,7 @@
     });
 
     $del.addEventListener('click', async ()=>{
-      const email = $delEmail.value.trim();
+      const email = $delEmail.value.trim().toLowerCase();
       if(!email) return alert("Digite o e-mail do estudante.");
       const r = await fetch(`${CONFIG.BACKEND_BASE_URL}/admin/deleteUser`, {
         method:'POST',
